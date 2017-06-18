@@ -52,7 +52,7 @@ dependencies {
 
 jar {
 	manifest {
-		attributes 'Main-Class': 'de.adrodoc55.bio.dna.peptide.extractor.main.SequenceSlicerMain'
+		attributes 'Main-Class': 'de.adrodoc55.bio.dna.peptide.extractor.main.PeptideExtractorMain'
 	}
 }
 
@@ -66,7 +66,7 @@ task standaloneJar(type: Jar) {
     }
   }
   manifest {
-        attributes 'Main-Class': 'de.adrodoc55.bio.dna.peptide.extractor.main.SequenceSlicerMainLauncher'
+        attributes 'Main-Class': 'de.adrodoc55.bio.dna.peptide.extractor.main.PeptideExtractorMainLauncher'
     }
   classifier 'standalone'
 }

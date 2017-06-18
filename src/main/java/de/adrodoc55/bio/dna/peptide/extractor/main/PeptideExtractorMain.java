@@ -63,9 +63,9 @@ import com.google.common.io.Resources;
 /**
  * @author Adrodoc55
  */
-public class SequenceSlicerMain {
+public class PeptideExtractorMain {
   public static void main(String[] args) throws IOException {
-    SequenceSlicerParameter params = new SequenceSlicerParameter();
+    PeptideExtractorParameter params = new PeptideExtractorParameter();
     JCommander jc = new JCommander(params);
     jc.setProgramName("java -jar sequence-slicer.jar");
     try {
@@ -114,7 +114,7 @@ public class SequenceSlicerMain {
     AMINO_ACIDS.put("Val", 'V');
   }
 
-  private static List<String> transform(List<String> lines, SequenceSlicerParameter params) {
+  private static List<String> transform(List<String> lines, PeptideExtractorParameter params) {
     List<String> result = new ArrayList<>();
     Set<String> uniqueSolutions = new HashSet<>();
     for (int i = 0; i < lines.size();) {
@@ -181,7 +181,7 @@ public class SequenceSlicerMain {
   /**
    * Retrieves the characters around mutationIndex (1 based) of the specified protein.
    * {@code offset} is the number of characters before and after the mutation that are retrieved.
-   * 
+   *
    * @param protein
    * @param mutationIndex
    * @param offset the number of characters before and after the mutation that are retrieved

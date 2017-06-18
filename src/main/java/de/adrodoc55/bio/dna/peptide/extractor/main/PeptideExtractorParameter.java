@@ -51,7 +51,7 @@ import com.beust.jcommander.ParameterException;
 /**
  * @author Adrodoc55
  */
-public class SequenceSlicerParameter {
+public class PeptideExtractorParameter {
   @Parameter(names = {"-h", "--help"}, help = true,
       description = "Print information about the commandline usage")
   private boolean help;

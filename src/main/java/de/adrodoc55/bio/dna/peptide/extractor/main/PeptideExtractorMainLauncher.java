@@ -46,7 +46,7 @@ import com.jdotsoft.jarloader.JarClassLoader;
 /**
  * @author Adrodoc55
  */
-public class SequenceSlicerMainLauncher {
+public class PeptideExtractorMainLauncher {
   public static void main(String[] args) throws Throwable {
     JarClassLoader jcl = new JarClassLoader();
     jcl.invokeMain("de.adrodoc55.bio.dna.peptide.extractor.main.SequenceSlicerMain", args);
