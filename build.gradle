@@ -1,7 +1,7 @@
 apply plugin: 'eclipse'
 apply plugin: 'java'
 
-version = '2017.06.18.21.14'
+version = '2017.06.18.22.19'
 archivesBaseName = 'peptide-extractor'
 
 task wrapper(type: Wrapper) {
