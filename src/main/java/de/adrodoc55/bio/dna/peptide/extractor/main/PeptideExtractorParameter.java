@@ -58,15 +58,15 @@ public class PeptideExtractorParameter {
   @Parameter(required = true, description = "<input-file>")
   private List<File> input;
 
-  @Parameter(names = {"-o", "--output"}, required = true, description = "Specify an output file")
+  @Parameter(names = {"-o", "--output"}, required = true, description = "Specify the output file")
   private File output;
 
   @Parameter(names = {"-f", "--offset"},
-      description = "The number of aminoacids before and after each mutation that are retrieved")
+      description = "The number of aminoacids before and after each mutation that are extracted")
   private int offset = 8;
 
   @Parameter(names = {"-i", "--ignore-errors"},
-      description = "Don't stop execution when an error occurs")
+      description = "Continue execution when an error occurs")
   private boolean ignoreErrors;
 
   public boolean isHelp() {
