@@ -124,15 +124,16 @@ public class Insertion implements Mutation {
   }
 
   @Override
-  public String extractFromProtein(String protein, int offset) throws ValidationException {
+  public CharSequence extractFromProtein(CharSequence protein, int offset)
+      throws ValidationException {
     validateProtein(protein);
     int beginIndex = Math.max(0, getIndexBeforeInsertion() - offset);
     int endIndex = Math.min(protein.length(), getIndexAfterInsertion() - 1 + offset);
-    return protein.substring(beginIndex, endIndex);
+    return protein.subSequence(beginIndex, endIndex);
   }
 
   @Override
-  public void validateProtein(String protein) throws ValidationException {
+  public void validateProtein(CharSequence protein) throws ValidationException {
     checkAmino(protein, indexBeforeInsertion, aminoBeforeInsertion);
     int insertionSize = insertedAminos.size();
     int firstMutationIndex = indexBeforeInsertion + 1;
@@ -143,7 +144,7 @@ public class Insertion implements Mutation {
   }
 
   @Override
-  public String getUniqueSolution(String output) {
+  public String getUniqueSolution(CharSequence output) {
     return "INS-" + output;
   }
 }

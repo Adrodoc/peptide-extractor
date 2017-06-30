@@ -102,21 +102,20 @@ public class PeptideExtractorMain {
       String header = lines.get(headerLineIndex);
       if (header.startsWith(HEADER_PREFIX)) {
 
-        StringBuilder sb = new StringBuilder();
+        StringBuilder protein = new StringBuilder();
         while (lineIndex < lines.size() && !lines.get(lineIndex).startsWith(HEADER_PREFIX)) {
-          sb.append(lines.get(lineIndex++));
+          protein.append(lines.get(lineIndex++));
         }
 
         int headerLineNumber = headerLineIndex + 1;
         try {
           Mutation mutation = Mutations.parse(header);
           if (mutation != null) {
-            String protein = sb.toString();
-            String output = mutation.extractFromProtein(protein, params.getOffset());
+            CharSequence output = mutation.extractFromProtein(protein, params.getOffset());
             String uniqueSolution = mutation.getUniqueSolution(output);
             if (uniqueSolutions.add(uniqueSolution)) {
               result.add(header);
-              result.add(output);
+              result.add(output.toString());
             }
           } else {
             throw new PeptideExtractorException("Unrecognized mutation header");

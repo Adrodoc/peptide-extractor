@@ -55,9 +55,9 @@ public interface Mutation {
    * @param offset the number of characters before and after the mutation that are retrieved
    * @return the extracted {@link String} of AminoAcids
    */
-  String extractFromProtein(String protein, int offset) throws ValidationException;
+  CharSequence extractFromProtein(CharSequence protein, int offset) throws ValidationException;
 
-  void validateProtein(String protein) throws ValidationException;
+  void validateProtein(CharSequence protein) throws ValidationException;
 
-  String getUniqueSolution(String output);
+  String getUniqueSolution(CharSequence output);
 }

@@ -93,20 +93,21 @@ public class SingleNucleotidePolymorphism implements Mutation {
   }
 
   @Override
-  public String extractFromProtein(String protein, int offset) throws ValidationException {
+  public CharSequence extractFromProtein(CharSequence protein, int offset)
+      throws ValidationException {
     validateProtein(protein);
     int beginIndex = Math.max(0, mutationIndex - 1 - offset);
     int endIndex = Math.min(protein.length(), mutationIndex + offset);
-    return protein.substring(beginIndex, endIndex);
+    return protein.subSequence(beginIndex, endIndex);
   }
 
   @Override
-  public void validateProtein(String protein) throws ValidationException {
+  public void validateProtein(CharSequence protein) throws ValidationException {
     checkAmino(protein, mutationIndex, mutatedAmino);
   }
 
   @Override
-  public String getUniqueSolution(String output) {
+  public String getUniqueSolution(CharSequence output) {
     return "SNP-" + output;
   }
 }

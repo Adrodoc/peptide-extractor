@@ -80,7 +80,7 @@ public class Mutations {
    * @param expected
    * @throws ValidationException
    */
-  public static void checkAmino(String protein, int mutationIndex, AminoAcid expected)
+  public static void checkAmino(CharSequence protein, int mutationIndex, AminoAcid expected)
       throws ValidationException {
     char actualAmino = toUpperCase(protein.charAt(mutationIndex - 1));
     char expectedAmino = expected.getCharCode();
