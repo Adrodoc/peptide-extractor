@@ -41,23 +41,23 @@
  */
 package de.adrodoc55.bio.dna.peptide.extractor.main;
 
+import static de.adrodoc55.bio.dna.FastaConstants.COMMENT_PREFIX;
 import static de.adrodoc55.bio.dna.FastaConstants.HEADER_PREFIX;
+import static de.adrodoc55.bio.dna.FastaConstants.MAX_LINE_LENGTH;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
+import java.io.LineNumberReader;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
-import com.google.common.base.Charsets;
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
+import com.google.common.base.Splitter;
 import com.google.common.io.Files;
-import com.google.common.io.Resources;
 
 import de.adrodoc55.bio.dna.peptide.extractor.PeptideExtractorException;
 import de.adrodoc55.bio.dna.peptide.extractor.mutation.Mutation;
@@ -77,61 +77,77 @@ public class PeptideExtractorMain {
         jc.usage();
         return;
       }
-      URL inputUrl = params.getInput().toURI().toURL();
-      ImmutableList<String> lines = Resources.asCharSource(inputUrl, Charsets.UTF_8).readLines();
 
-      File outputFile = params.getOutput();
-      Files.createParentDirs(outputFile);
-      outputFile.createNewFile();
-
-      List<String> outputLines = transform(lines, params);
-      String output = Joiner.on("\n").join(outputLines);
-      Files.write(output, outputFile, Charsets.UTF_8);
+      main(params);
     } catch (ParameterException ex) {
       System.err.println(ex.getLocalizedMessage());
       System.err.println("Run with '-h' to print help");
     }
   }
 
-  private static List<String> transform(List<String> lines, PeptideExtractorParameter params)
-      throws PeptideExtractorException {
-    List<String> result = new ArrayList<>();
-    Set<String> uniqueSolutions = new HashSet<>();
-    for (int lineIndex = 0; lineIndex < lines.size();) {
-      int headerLineIndex = lineIndex++;
-      String header = lines.get(headerLineIndex);
-      if (header.startsWith(HEADER_PREFIX)) {
+  private static void main(PeptideExtractorParameter params)
+      throws IOException, PeptideExtractorException {
+    File input = params.getInput();
 
-        StringBuilder protein = new StringBuilder();
-        while (lineIndex < lines.size() && !lines.get(lineIndex).startsWith(HEADER_PREFIX)) {
-          protein.append(lines.get(lineIndex++));
+    File outputFile = params.getOutput();
+    Files.createParentDirs(outputFile);
+    outputFile.createNewFile();
+
+    try (LineNumberReader in = new LineNumberReader(new FileReader(input));
+        BufferedWriter out = new BufferedWriter(new FileWriter(outputFile));) {
+      Set<String> uniqueSolutions = new HashSet<>();
+      String lastHeader = null;
+      int lastHeaderLineNumber = -1;
+      StringBuilder protein = new StringBuilder();
+      while (true) {
+        String line = in.readLine();
+        if (line == null || line.startsWith(HEADER_PREFIX)) {
+          if (lastHeader != null) {
+            processMutation(lastHeader, lastHeaderLineNumber, protein, uniqueSolutions, out,
+                params);
+          }
+        } else if (!line.startsWith(COMMENT_PREFIX)) {
+          protein.append(line.trim());
         }
-
-        int headerLineNumber = headerLineIndex + 1;
-        try {
-          Mutation mutation = Mutations.parse(header);
-          if (mutation != null) {
-            CharSequence output = mutation.extractFromProtein(protein, params.getOffset());
-            String uniqueSolution = mutation.getUniqueSolution(output);
-            if (uniqueSolutions.add(uniqueSolution)) {
-              result.add(header);
-              result.add(output.toString());
-            }
-          } else {
-            throw new PeptideExtractorException("Unrecognized mutation header");
-          }
-        } catch (PeptideExtractorException ex) {
-          String mutationDescription = header + " in line " + headerLineNumber;
-          if (params.isIgnoreErrors()) {
-            System.err.println("Ignoring mutation " + mutationDescription + " due to: "
-                + ex.getLocalizedMessage());
-          } else {
-            throw new PeptideExtractorException(
-                "Error at mutation " + mutationDescription + ": " + ex.getLocalizedMessage(), ex);
-          }
+        if (line != null && line.startsWith(HEADER_PREFIX)) {
+          lastHeader = line;
+          lastHeaderLineNumber = in.getLineNumber();
+          protein.setLength(0);
         }
       }
     }
-    return result;
+  }
+
+  private static final Splitter SPLITTER = Splitter.fixedLength(MAX_LINE_LENGTH);
+
+  private static void processMutation(String header, int headerLineNumber, StringBuilder protein,
+      Set<String> uniqueSolutions, BufferedWriter out, PeptideExtractorParameter params)
+      throws IOException, PeptideExtractorException {
+    try {
+      Mutation mutation = Mutations.parse(header);
+      if (mutation != null) {
+        CharSequence output = mutation.extractFromProtein(protein, params.getOffset());
+        String uniqueSolution = mutation.getUniqueSolution(output);
+        if (uniqueSolutions.add(uniqueSolution)) {
+          out.write(header);
+          out.newLine();
+          for (String subOutput : SPLITTER.split(output)) {
+            out.write(subOutput);
+            out.newLine();
+          }
+        }
+      } else {
+        throw new PeptideExtractorException("Unrecognized mutation header");
+      }
+    } catch (PeptideExtractorException ex) {
+      String mutationDescription = header + " in line " + headerLineNumber;
+      if (params.isIgnoreErrors()) {
+        System.err.println(
+            "Ignoring mutation " + mutationDescription + " due to: " + ex.getLocalizedMessage());
+      } else {
+        throw new PeptideExtractorException(
+            "Error at mutation " + mutationDescription + ": " + ex.getLocalizedMessage(), ex);
+      }
+    }
   }
 }
