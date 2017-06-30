@@ -1,7 +1,7 @@
 apply plugin: 'eclipse'
 apply plugin: 'java'
 
-version = '2017.06.18.22.19'
+version = '2017.07.01.01.18'
 archivesBaseName = 'peptide-extractor'
 
 task wrapper(type: Wrapper) {
@@ -51,9 +51,9 @@ dependencies {
 // ----------------------------------------------------------------------------------------------------
 
 jar {
-	manifest {
-		attributes 'Main-Class': 'de.adrodoc55.bio.dna.peptide.extractor.main.PeptideExtractorMain'
-	}
+  manifest {
+    attributes 'Main-Class': 'de.adrodoc55.bio.dna.peptide.extractor.main.PeptideExtractorMain'
+  }
 }
 
 task standaloneJar(type: Jar) {
