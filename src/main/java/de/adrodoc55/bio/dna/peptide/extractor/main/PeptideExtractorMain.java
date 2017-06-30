@@ -109,7 +109,9 @@ public class PeptideExtractorMain {
         } else if (!line.startsWith(COMMENT_PREFIX)) {
           protein.append(line.trim());
         }
-        if (line != null && line.startsWith(HEADER_PREFIX)) {
+        if (line == null) {
+          break;
+        } else if (line.startsWith(HEADER_PREFIX)) {
           lastHeader = line;
           lastHeaderLineNumber = in.getLineNumber();
           protein.setLength(0);
