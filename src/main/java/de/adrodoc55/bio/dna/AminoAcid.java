@@ -39,56 +39,53 @@
  * Sie sollten eine Kopie der GNU General Public License zusammen mit Peptide Extractor erhalten
  * haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
  */
-package de.adrodoc55.bio.dna.peptide.extractor.main;
+package de.adrodoc55.bio.dna;
 
-import java.io.File;
-import java.util.List;
+import java.util.Locale;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParameterException;
+import de.adrodoc55.bio.dna.peptide.extractor.UnknownAminoAcidException;
 
 /**
  * @author Adrodoc55
  */
-public class PeptideExtractorParameter {
-  @Parameter(names = {"-h", "--help"}, help = true,
-      description = "Print information about the commandline usage")
-  private boolean help;
-
-  @Parameter(required = true, description = "<input-file>")
-  private List<File> input;
-
-  @Parameter(names = {"-o", "--output"}, required = true, description = "Specify an output file")
-  private File output;
-
-  @Parameter(names = {"-f", "--offset"},
-      description = "The number of aminoacids before and after each mutation that are retrieved")
-  private int offset = 8;
-
-  @Parameter(names = {"-i", "--ignore-errors"},
-      description = "Don't stop execution when an error occurs")
-  private boolean ignoreErrors;
-
-  public boolean isHelp() {
-    return help;
-  }
-
-  public File getInput() throws ParameterException {
-    if (input.size() != 1) {
-      throw new ParameterException("Exactly one source file has to be specified");
+public enum AminoAcid {
+  ALA('A'), //
+  ARG('R'), //
+  ASN('N'), //
+  ASP('D'), //
+  CYS('C'), //
+  GLN('Q'), //
+  GLU('E'), //
+  GLY('G'), //
+  HIS('H'), //
+  ILE('I'), //
+  LEU('L'), //
+  LYS('K'), //
+  MET('M'), //
+  PHE('F'), //
+  PRO('P'), //
+  SER('S'), //
+  THR('T'), //
+  TRP('W'), //
+  TYR('Y'), //
+  VAL('V'), //
+  ;
+  public static AminoAcid from3LetterCode(String code) throws UnknownAminoAcidException {
+    String upperCase = code.toUpperCase(Locale.ENGLISH);
+    try {
+      return valueOf(upperCase);
+    } catch (IllegalArgumentException ex) {
+      throw new UnknownAminoAcidException("Unknown aminoacid " + code, ex);
     }
-    return input.get(0).getAbsoluteFile();
   }
 
-  public File getOutput() {
-    return output;
+  private final char charCode;
+
+  private AminoAcid(char charCode) {
+    this.charCode = charCode;
   }
 
-  public int getOffset() {
-    return offset;
-  }
-
-  public boolean isIgnoreErrors() {
-    return ignoreErrors;
+  public char getCharCode() {
+    return charCode;
   }
 }

@@ -39,56 +39,27 @@
  * Sie sollten eine Kopie der GNU General Public License zusammen mit Peptide Extractor erhalten
  * haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
  */
-package de.adrodoc55.bio.dna.peptide.extractor.main;
-
-import java.io.File;
-import java.util.List;
-
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParameterException;
+package de.adrodoc55.bio.dna.peptide.extractor;
 
 /**
  * @author Adrodoc55
  */
-public class PeptideExtractorParameter {
-  @Parameter(names = {"-h", "--help"}, help = true,
-      description = "Print information about the commandline usage")
-  private boolean help;
+public class UnknownAminoAcidException extends PeptideExtractorException {
+  private static final long serialVersionUID = 1L;
 
-  @Parameter(required = true, description = "<input-file>")
-  private List<File> input;
-
-  @Parameter(names = {"-o", "--output"}, required = true, description = "Specify an output file")
-  private File output;
-
-  @Parameter(names = {"-f", "--offset"},
-      description = "The number of aminoacids before and after each mutation that are retrieved")
-  private int offset = 8;
-
-  @Parameter(names = {"-i", "--ignore-errors"},
-      description = "Don't stop execution when an error occurs")
-  private boolean ignoreErrors;
-
-  public boolean isHelp() {
-    return help;
+  public UnknownAminoAcidException() {
+    super();
   }
 
-  public File getInput() throws ParameterException {
-    if (input.size() != 1) {
-      throw new ParameterException("Exactly one source file has to be specified");
-    }
-    return input.get(0).getAbsoluteFile();
+  public UnknownAminoAcidException(String message) {
+    super(message);
   }
 
-  public File getOutput() {
-    return output;
+  public UnknownAminoAcidException(Throwable cause) {
+    super(cause);
   }
 
-  public int getOffset() {
-    return offset;
-  }
-
-  public boolean isIgnoreErrors() {
-    return ignoreErrors;
+  public UnknownAminoAcidException(String message, Throwable cause) {
+    super(message, cause);
   }
 }

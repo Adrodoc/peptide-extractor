@@ -41,31 +41,33 @@
  */
 package de.adrodoc55.bio.dna.peptide.extractor.main;
 
+import static de.adrodoc55.bio.dna.FastaConstants.HEADER_PREFIX;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
-import java.util.regex.Matcher;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
+
+import de.adrodoc55.bio.dna.peptide.extractor.PeptideExtractorException;
+import de.adrodoc55.bio.dna.peptide.extractor.mutation.Mutation;
+import de.adrodoc55.bio.dna.peptide.extractor.mutation.Mutations;
 
 /**
  * @author Adrodoc55
  */
 public class PeptideExtractorMain {
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) throws IOException, PeptideExtractorException {
     PeptideExtractorParameter params = new PeptideExtractorParameter();
     JCommander jc = new JCommander(params);
     jc.setProgramName("java -jar peptide-extractor.jar");
@@ -91,118 +93,46 @@ public class PeptideExtractorMain {
     }
   }
 
-  private static final BiMap<String, Character> AMINO_ACIDS = HashBiMap.create(20);
-  static {
-    AMINO_ACIDS.put("ALA", 'A');
-    AMINO_ACIDS.put("ARG", 'R');
-    AMINO_ACIDS.put("ASN", 'N');
-    AMINO_ACIDS.put("ASP", 'D');
-    AMINO_ACIDS.put("CYS", 'C');
-    AMINO_ACIDS.put("GLN", 'Q');
-    AMINO_ACIDS.put("GLU", 'E');
-    AMINO_ACIDS.put("GLY", 'G');
-    AMINO_ACIDS.put("HIS", 'H');
-    AMINO_ACIDS.put("ILE", 'I');
-    AMINO_ACIDS.put("LEU", 'L');
-    AMINO_ACIDS.put("LYS", 'K');
-    AMINO_ACIDS.put("MET", 'M');
-    AMINO_ACIDS.put("PHE", 'F');
-    AMINO_ACIDS.put("PRO", 'P');
-    AMINO_ACIDS.put("SER", 'S');
-    AMINO_ACIDS.put("THR", 'T');
-    AMINO_ACIDS.put("TRP", 'W');
-    AMINO_ACIDS.put("TYR", 'Y');
-    AMINO_ACIDS.put("VAL", 'V');
-  }
-
-  private static List<String> transform(List<String> lines, PeptideExtractorParameter params) {
+  private static List<String> transform(List<String> lines, PeptideExtractorParameter params)
+      throws PeptideExtractorException {
     List<String> result = new ArrayList<>();
     Set<String> uniqueSolutions = new HashSet<>();
-    for (int i = 0; i < lines.size();) {
-      int headerLine = i++;
-      String header = lines.get(headerLine);
-      if (header.startsWith(params.getHeaderPrefix())) {
+    for (int lineIndex = 0; lineIndex < lines.size();) {
+      int headerLineIndex = lineIndex++;
+      String header = lines.get(headerLineIndex);
+      if (header.startsWith(HEADER_PREFIX)) {
 
         StringBuilder sb = new StringBuilder();
-        while (i < lines.size() && !lines.get(i).startsWith(params.getHeaderPrefix())) {
-          sb.append(lines.get(i++));
+        while (lineIndex < lines.size() && !lines.get(lineIndex).startsWith(HEADER_PREFIX)) {
+          sb.append(lines.get(lineIndex++));
         }
 
-        if (params.getHeaderPattern().matcher(header).matches()) {
-          Matcher mutationIndexMatcher = params.getMutationIndexPattern().matcher(header);
-          mutationIndexMatcher.find();
-          // 1 based index
-          int mutationIndex = Integer.parseInt(mutationIndexMatcher.group(1));
-
-          Matcher nativeAminoMatcher = params.getNativeAminoPattern().matcher(header);
-          nativeAminoMatcher.find();
-          String nativeAmino = nativeAminoMatcher.group(1).toUpperCase(Locale.ENGLISH);
-
-          Matcher mutatedAminoMatcher = params.getMutatedAminoPattern().matcher(header);
-          mutatedAminoMatcher.find();
-          String mutatedAmino = mutatedAminoMatcher.group(1).toUpperCase(Locale.ENGLISH);
-
-          // Ignore terminating mutations, because they dont cause an aminoacid sequence alternation
-          if ("TER".equals(mutatedAmino)) {
-            continue;
+        int headerLineNumber = headerLineIndex + 1;
+        try {
+          Mutation mutation = Mutations.parse(header);
+          if (mutation != null) {
+            String protein = sb.toString();
+            String output = mutation.extractFromProtein(protein, params.getOffset());
+            String uniqueSolution = mutation.getUniqueSolution(output);
+            if (uniqueSolutions.add(uniqueSolution)) {
+              result.add(header);
+              result.add(output);
+            }
+          } else {
+            throw new PeptideExtractorException("Unrecognized mutation header");
           }
-
-          String protein = sb.toString();
-
-          boolean isDeletion = "DEL".equals(mutatedAmino);
-          if (!isDeletion) {
-            checkAminoAtMutationIndexMatches(protein, mutationIndex, mutatedAmino,
-                header + " in line " + (headerLine + 1));
-          }
-
-          String output =
-              getMutationSequence(protein, mutationIndex, params.getOffset(), isDeletion);
-          String uniqueSolution = nativeAmino + ">" + mutatedAmino + ":" + output;
-          if (uniqueSolutions.add(uniqueSolution)) {
-            result.add(header);
-            result.add(output);
+        } catch (PeptideExtractorException ex) {
+          String mutationDescription = header + " in line " + headerLineNumber;
+          if (params.isIgnoreErrors()) {
+            System.err.println("Ignoring mutation " + mutationDescription + " due to: "
+                + ex.getLocalizedMessage());
+          } else {
+            throw new PeptideExtractorException(
+                "Error at mutation " + mutationDescription + ": " + ex.getLocalizedMessage(), ex);
           }
         }
       }
     }
     return result;
-  }
-
-  private static void checkAminoAtMutationIndexMatches(String protein, int mutationIndex,
-      String expectedAmino, String mutationDescription) {
-    char expectedAminoCharacter;
-    if (expectedAmino.length() == 1) {
-      expectedAminoCharacter = expectedAmino.charAt(0);
-    } else {
-      if (!AMINO_ACIDS.containsKey(expectedAmino)) {
-        throw new IllegalArgumentException(
-            String.format("Unknown aminoacid %s in mutation ", expectedAmino, mutationDescription));
-      }
-      expectedAminoCharacter = AMINO_ACIDS.get(expectedAmino);
-    }
-
-    char actualAminoCharacter = protein.charAt(mutationIndex - 1);
-    if (expectedAminoCharacter != actualAminoCharacter) {
-      throw new IllegalArgumentException(
-          String.format("Incorrect aminoacid at index %s! Expected %s but got %s for mutation ",
-              mutationIndex, expectedAminoCharacter, actualAminoCharacter, mutationDescription));
-    }
-  }
-
-  /**
-   * Retrieves the characters around mutationIndex (1 based) of the specified protein.
-   * {@code offset} is the number of characters before and after the mutation that are retrieved.
-   *
-   * @param protein
-   * @param mutationIndex (1 based)
-   * @param offset the number of characters before and after the mutation that are retrieved
-   * @return
-   */
-  private static String getMutationSequence(String protein, int mutationIndex, int offset,
-      boolean isDeletion) {
-    int zeroBasedIndex = mutationIndex - 1;
-    int beginIndex = Math.max(0, zeroBasedIndex - offset);
-    int endIndex = Math.min(protein.length(), zeroBasedIndex + (isDeletion ? 0 : 1) + offset);
-    return protein.substring(beginIndex, endIndex);
   }
 }

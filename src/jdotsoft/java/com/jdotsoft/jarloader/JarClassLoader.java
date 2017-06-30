@@ -194,11 +194,16 @@ public class JarClassLoader extends ClassLoader {
   }
   public enum LogArea {
     /** Enable all logging areas. */
-    ALL, /** Configuration related logging. Enabled always. */
-    CONFIG, /** Enable JAR related logging. */
-    JAR, /** Enable class loading related logging. */
-    CLASS, /** Enable resource loading related logging. */
-    RESOURCE, /** Enable native libraries loading related logging. */
+    ALL,
+    /** Configuration related logging. Enabled always. */
+    CONFIG,
+    /** Enable JAR related logging. */
+    JAR,
+    /** Enable class loading related logging. */
+    CLASS,
+    /** Enable resource loading related logging. */
+    RESOURCE,
+    /** Enable native libraries loading related logging. */
     NATIVE
   }
 

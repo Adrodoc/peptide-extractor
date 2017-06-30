@@ -39,56 +39,61 @@
  * Sie sollten eine Kopie der GNU General Public License zusammen mit Peptide Extractor erhalten
  * haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
  */
-package de.adrodoc55.bio.dna.peptide.extractor.main;
+package de.adrodoc55.bio.dna.peptide.extractor.mutation;
 
-import java.io.File;
-import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParameterException;
+import de.adrodoc55.bio.dna.AminoAcid;
+import de.adrodoc55.bio.dna.peptide.extractor.UnknownAminoAcidException;
+import de.adrodoc55.bio.dna.peptide.extractor.ValidationException;
 
 /**
  * @author Adrodoc55
  */
-public class PeptideExtractorParameter {
-  @Parameter(names = {"-h", "--help"}, help = true,
-      description = "Print information about the commandline usage")
-  private boolean help;
+public class Termination implements Mutation {
+  private static Pattern PATTERN = Pattern.compile(">.*([A-Za-z]{3})(\\d+)[tT][eE][rR]$");
 
-  @Parameter(required = true, description = "<input-file>")
-  private List<File> input;
-
-  @Parameter(names = {"-o", "--output"}, required = true, description = "Specify an output file")
-  private File output;
-
-  @Parameter(names = {"-f", "--offset"},
-      description = "The number of aminoacids before and after each mutation that are retrieved")
-  private int offset = 8;
-
-  @Parameter(names = {"-i", "--ignore-errors"},
-      description = "Don't stop execution when an error occurs")
-  private boolean ignoreErrors;
-
-  public boolean isHelp() {
-    return help;
-  }
-
-  public File getInput() throws ParameterException {
-    if (input.size() != 1) {
-      throw new ParameterException("Exactly one source file has to be specified");
+  public static Termination parse(CharSequence header) throws UnknownAminoAcidException {
+    Matcher matcher = PATTERN.matcher(header);
+    if (matcher.find()) {
+      AminoAcid nativeAmino = AminoAcid.from3LetterCode(matcher.group(1));
+      int mutationIndex = Integer.parseInt(matcher.group(2));
+      return new Termination(nativeAmino, mutationIndex);
+    } else {
+      return null;
     }
-    return input.get(0).getAbsoluteFile();
   }
 
-  public File getOutput() {
-    return output;
+  private final AminoAcid nativeAmino;
+  private final int mutationIndex;
+
+  public Termination(AminoAcid nativeAmino, int mutationIndex) {
+    this.nativeAmino = nativeAmino;
+    this.mutationIndex = mutationIndex;
   }
 
-  public int getOffset() {
-    return offset;
+  public AminoAcid getNaitveAmino() {
+    return nativeAmino;
   }
 
-  public boolean isIgnoreErrors() {
-    return ignoreErrors;
+  public int getMutationIndex() {
+    return mutationIndex;
+  }
+
+  @Override
+  public String extractFromProtein(String protein, int offset) throws ValidationException {
+    validateProtein(protein);
+    int beginIndex = Math.max(0, mutationIndex - 1 - offset);
+    int endIndex = Math.min(protein.length(), mutationIndex - 1 + offset);
+    return protein.substring(beginIndex, endIndex);
+  }
+
+  @Override
+  public void validateProtein(String protein) throws ValidationException {}
+
+  @Override
+  public String getUniqueSolution(String output) {
+    return "TER-" + output;
   }
 }

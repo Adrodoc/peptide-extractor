@@ -39,56 +39,58 @@
  * Sie sollten eine Kopie der GNU General Public License zusammen mit Peptide Extractor erhalten
  * haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
  */
-package de.adrodoc55.bio.dna.peptide.extractor.main;
+package de.adrodoc55.bio.dna.peptide.extractor.mutation;
 
-import java.io.File;
-import java.util.List;
+import static java.lang.Character.toUpperCase;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParameterException;
+import de.adrodoc55.bio.dna.AminoAcid;
+import de.adrodoc55.bio.dna.peptide.extractor.UnknownAminoAcidException;
+import de.adrodoc55.bio.dna.peptide.extractor.ValidationException;
 
 /**
  * @author Adrodoc55
  */
-public class PeptideExtractorParameter {
-  @Parameter(names = {"-h", "--help"}, help = true,
-      description = "Print information about the commandline usage")
-  private boolean help;
-
-  @Parameter(required = true, description = "<input-file>")
-  private List<File> input;
-
-  @Parameter(names = {"-o", "--output"}, required = true, description = "Specify an output file")
-  private File output;
-
-  @Parameter(names = {"-f", "--offset"},
-      description = "The number of aminoacids before and after each mutation that are retrieved")
-  private int offset = 8;
-
-  @Parameter(names = {"-i", "--ignore-errors"},
-      description = "Don't stop execution when an error occurs")
-  private boolean ignoreErrors;
-
-  public boolean isHelp() {
-    return help;
-  }
-
-  public File getInput() throws ParameterException {
-    if (input.size() != 1) {
-      throw new ParameterException("Exactly one source file has to be specified");
+public class Mutations {
+  public static Mutation parse(String header)
+      throws UnknownAminoAcidException, ValidationException {
+    Mutation termination = Termination.parse(header);
+    if (termination != null) {
+      // Ignore terminating mutations, because they dont cause an aminoacid sequence alternation
+      return null;
     }
-    return input.get(0).getAbsoluteFile();
+    Mutation deletion = Deletion.parse(header);
+    if (deletion != null) {
+      return deletion;
+    }
+    Mutation insertion = Insertion.parse(header);
+    if (insertion != null) {
+      return insertion;
+    }
+    Mutation snp = SingleNucleotidePolymorphism.parse(header);
+    if (snp != null) {
+      return snp;
+    }
+    return null;
   }
 
-  public File getOutput() {
-    return output;
+  /**
+   *
+   * @param protein
+   * @param mutationIndex (1 based)
+   * @param expected
+   * @throws ValidationException
+   */
+  public static void checkAmino(String protein, int mutationIndex, AminoAcid expected)
+      throws ValidationException {
+    char actualAmino = toUpperCase(protein.charAt(mutationIndex - 1));
+    char expectedAmino = expected.getCharCode();
+    checkValid(actualAmino != expectedAmino, "Incorrect aminoacid at index " + mutationIndex
+        + "! Expected " + expectedAmino + " but got " + actualAmino);
   }
 
-  public int getOffset() {
-    return offset;
-  }
-
-  public boolean isIgnoreErrors() {
-    return ignoreErrors;
+  public static void checkValid(boolean b, String message) throws ValidationException {
+    if (b) {
+      throw new ValidationException(message);
+    }
   }
 }
