@@ -67,7 +67,7 @@ public class PeptideExtractorMain {
   public static void main(String[] args) throws IOException {
     PeptideExtractorParameter params = new PeptideExtractorParameter();
     JCommander jc = new JCommander(params);
-    jc.setProgramName("java -jar sequence-slicer.jar");
+    jc.setProgramName("java -jar peptide-extractor.jar");
     try {
       jc.parse(args);
       if (params.isHelp()) {
