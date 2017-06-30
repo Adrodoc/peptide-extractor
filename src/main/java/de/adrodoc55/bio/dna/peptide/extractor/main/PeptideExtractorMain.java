@@ -62,6 +62,7 @@ import com.google.common.io.Files;
 import de.adrodoc55.bio.dna.peptide.extractor.PeptideExtractorException;
 import de.adrodoc55.bio.dna.peptide.extractor.mutation.Mutation;
 import de.adrodoc55.bio.dna.peptide.extractor.mutation.Mutations;
+import de.adrodoc55.bio.dna.peptide.extractor.mutation.Termination;
 
 /**
  * @author Adrodoc55
@@ -125,9 +126,13 @@ public class PeptideExtractorMain {
   private static void processMutation(String header, int headerLineNumber, StringBuilder protein,
       Set<String> uniqueSolutions, BufferedWriter out, PeptideExtractorParameter params)
       throws IOException, PeptideExtractorException {
+    String mutationDescription = header + " in line " + headerLineNumber;
     try {
       Mutation mutation = Mutations.parse(header);
-      if (mutation != null) {
+      if (mutation instanceof Termination) {
+        System.err.println("Ignoring terminating mutation " + mutationDescription
+            + ", because terminating mutations don't cause an aminoacid sequence alternation");
+      } else if (mutation != null) {
         CharSequence output = mutation.extractFromProtein(protein, params.getOffset());
         String uniqueSolution = mutation.getUniqueSolution(output);
         if (uniqueSolutions.add(uniqueSolution)) {
@@ -142,7 +147,6 @@ public class PeptideExtractorMain {
         throw new PeptideExtractorException("Unrecognized mutation header");
       }
     } catch (PeptideExtractorException ex) {
-      String mutationDescription = header + " in line " + headerLineNumber;
       if (params.isIgnoreErrors()) {
         System.err.println(
             "Ignoring mutation " + mutationDescription + " due to: " + ex.getLocalizedMessage());

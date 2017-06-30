@@ -55,8 +55,7 @@ public class Mutations {
       throws UnknownAminoAcidException, ValidationException {
     Mutation termination = Termination.parse(header);
     if (termination != null) {
-      // Ignore terminating mutations, because they dont cause an aminoacid sequence alternation
-      return null;
+      return termination;
     }
     Mutation deletion = Deletion.parse(header);
     if (deletion != null) {
