@@ -47,6 +47,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 
@@ -92,26 +93,26 @@ public class PeptideExtractorMain {
 
   private static final BiMap<String, Character> AMINO_ACIDS = HashBiMap.create(20);
   static {
-    AMINO_ACIDS.put("Ala", 'A');
-    AMINO_ACIDS.put("Arg", 'R');
-    AMINO_ACIDS.put("Asn", 'N');
-    AMINO_ACIDS.put("Asp", 'D');
-    AMINO_ACIDS.put("Cys", 'C');
-    AMINO_ACIDS.put("Gln", 'Q');
-    AMINO_ACIDS.put("Glu", 'E');
-    AMINO_ACIDS.put("Gly", 'G');
-    AMINO_ACIDS.put("His", 'H');
-    AMINO_ACIDS.put("Ile", 'I');
-    AMINO_ACIDS.put("Leu", 'L');
-    AMINO_ACIDS.put("Lys", 'K');
-    AMINO_ACIDS.put("Met", 'M');
-    AMINO_ACIDS.put("Phe", 'F');
-    AMINO_ACIDS.put("Pro", 'P');
-    AMINO_ACIDS.put("Ser", 'S');
-    AMINO_ACIDS.put("Thr", 'T');
-    AMINO_ACIDS.put("Trp", 'W');
-    AMINO_ACIDS.put("Tyr", 'Y');
-    AMINO_ACIDS.put("Val", 'V');
+    AMINO_ACIDS.put("ALA", 'A');
+    AMINO_ACIDS.put("ARG", 'R');
+    AMINO_ACIDS.put("ASN", 'N');
+    AMINO_ACIDS.put("ASP", 'D');
+    AMINO_ACIDS.put("CYS", 'C');
+    AMINO_ACIDS.put("GLN", 'Q');
+    AMINO_ACIDS.put("GLU", 'E');
+    AMINO_ACIDS.put("GLY", 'G');
+    AMINO_ACIDS.put("HIS", 'H');
+    AMINO_ACIDS.put("ILE", 'I');
+    AMINO_ACIDS.put("LEU", 'L');
+    AMINO_ACIDS.put("LYS", 'K');
+    AMINO_ACIDS.put("MET", 'M');
+    AMINO_ACIDS.put("PHE", 'F');
+    AMINO_ACIDS.put("PRO", 'P');
+    AMINO_ACIDS.put("SER", 'S');
+    AMINO_ACIDS.put("THR", 'T');
+    AMINO_ACIDS.put("TRP", 'W');
+    AMINO_ACIDS.put("TYR", 'Y');
+    AMINO_ACIDS.put("VAL", 'V');
   }
 
   private static List<String> transform(List<String> lines, PeptideExtractorParameter params) {
@@ -134,14 +135,14 @@ public class PeptideExtractorMain {
 
           Matcher nativeAminoMatcher = params.getNativeAminoPattern().matcher(header);
           nativeAminoMatcher.find();
-          String nativeAmino = nativeAminoMatcher.group(1);
+          String nativeAmino = nativeAminoMatcher.group(1).toUpperCase(Locale.ENGLISH);
 
           Matcher mutatedAminoMatcher = params.getMutatedAminoPattern().matcher(header);
           mutatedAminoMatcher.find();
-          String mutatedAmino = mutatedAminoMatcher.group(1);
+          String mutatedAmino = mutatedAminoMatcher.group(1).toUpperCase(Locale.ENGLISH);
 
           // Ignore terminating mutations, because they dont cause an aminoacid sequence alternation
-          if ("Ter".equals(mutatedAmino)) {
+          if ("TER".equals(mutatedAmino)) {
             continue;
           }
 
