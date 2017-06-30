@@ -131,6 +131,7 @@ public class PeptideExtractorMain {
         if (params.getHeaderPattern().matcher(header).matches()) {
           Matcher mutationIndexMatcher = params.getMutationIndexPattern().matcher(header);
           mutationIndexMatcher.find();
+          // 1 based index
           int mutationIndex = Integer.parseInt(mutationIndexMatcher.group(1));
 
           Matcher nativeAminoMatcher = params.getNativeAminoPattern().matcher(header);
@@ -147,30 +148,18 @@ public class PeptideExtractorMain {
           }
 
           String protein = sb.toString();
-          String output = getMutationSequence(protein, mutationIndex, params.getOffset());
 
-          char expectedAminoCharacter;
-          if (mutatedAmino.length() == 1) {
-            expectedAminoCharacter = mutatedAmino.charAt(0);
-          } else {
-            if (!AMINO_ACIDS.containsKey(mutatedAmino)) {
-              throw new IllegalArgumentException(
-                  String.format("Unknown aminoacid %s in mutation %s in line %s", mutatedAmino,
-                      header, headerLine + 1));
-            }
-            expectedAminoCharacter = AMINO_ACIDS.get(mutatedAmino);
-          }
-          char actualAminoCharacter = protein.charAt(mutationIndex - 1);
-          if (expectedAminoCharacter != actualAminoCharacter) {
-            throw new IllegalArgumentException(String.format(
-                "Incorrect aminoacid at index %s! Expected %s but got %s for mutation %s in line %s",
-                mutationIndex, expectedAminoCharacter, actualAminoCharacter, header,
-                headerLine + 1));
+          boolean isDeletion = "DEL".equals(mutatedAmino);
+          if (!isDeletion) {
+            checkAminoAtMutationIndexMatches(protein, mutationIndex, mutatedAmino,
+                header + " in line " + (headerLine + 1));
           }
 
+          String output =
+              getMutationSequence(protein, mutationIndex, params.getOffset(), isDeletion);
           String uniqueSolution = nativeAmino + ">" + mutatedAmino + ":" + output;
           if (uniqueSolutions.add(uniqueSolution)) {
-            result.add(header); // Header
+            result.add(header);
             result.add(output);
           }
         }
@@ -179,18 +168,41 @@ public class PeptideExtractorMain {
     return result;
   }
 
+  private static void checkAminoAtMutationIndexMatches(String protein, int mutationIndex,
+      String expectedAmino, String mutationDescription) {
+    char expectedAminoCharacter;
+    if (expectedAmino.length() == 1) {
+      expectedAminoCharacter = expectedAmino.charAt(0);
+    } else {
+      if (!AMINO_ACIDS.containsKey(expectedAmino)) {
+        throw new IllegalArgumentException(
+            String.format("Unknown aminoacid %s in mutation ", expectedAmino, mutationDescription));
+      }
+      expectedAminoCharacter = AMINO_ACIDS.get(expectedAmino);
+    }
+
+    char actualAminoCharacter = protein.charAt(mutationIndex - 1);
+    if (expectedAminoCharacter != actualAminoCharacter) {
+      throw new IllegalArgumentException(
+          String.format("Incorrect aminoacid at index %s! Expected %s but got %s for mutation ",
+              mutationIndex, expectedAminoCharacter, actualAminoCharacter, mutationDescription));
+    }
+  }
+
   /**
    * Retrieves the characters around mutationIndex (1 based) of the specified protein.
    * {@code offset} is the number of characters before and after the mutation that are retrieved.
    *
    * @param protein
-   * @param mutationIndex
+   * @param mutationIndex (1 based)
    * @param offset the number of characters before and after the mutation that are retrieved
    * @return
    */
-  private static String getMutationSequence(String protein, int mutationIndex, int offset) {
-    int beginIndex = Math.max(0, mutationIndex - 1 - offset);
-    int endIndex = Math.min(protein.length(), mutationIndex + offset);
+  private static String getMutationSequence(String protein, int mutationIndex, int offset,
+      boolean isDeletion) {
+    int zeroBasedIndex = mutationIndex - 1;
+    int beginIndex = Math.max(0, zeroBasedIndex - offset);
+    int endIndex = Math.min(protein.length(), zeroBasedIndex + (isDeletion ? 0 : 1) + offset);
     return protein.substring(beginIndex, endIndex);
   }
 }
