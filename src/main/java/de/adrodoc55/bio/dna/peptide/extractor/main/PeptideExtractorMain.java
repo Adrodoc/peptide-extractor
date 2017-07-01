@@ -137,7 +137,7 @@ public class PeptideExtractorMain {
         System.err.println("Ignoring terminating mutation " + mutationDescription
             + ", because terminating mutations don't cause an aminoacid sequence alternation");
       } else if (mutation != null) {
-        CharSequence output = mutation.extractFromProtein(protein, params.getOffset());
+        CharSequence output = mutation.extractFromProtein(protein, params.getEnclosing());
         String uniqueSolution = mutation.getUniqueSolution(output);
         if (uniqueSolutions.add(uniqueSolution)) {
           out.write(header);

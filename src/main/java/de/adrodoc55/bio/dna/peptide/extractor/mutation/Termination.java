@@ -82,11 +82,11 @@ public class Termination implements Mutation {
   }
 
   @Override
-  public CharSequence extractFromProtein(CharSequence protein, int offset)
+  public CharSequence extractFromProtein(CharSequence protein, int enclosing)
       throws ValidationException {
     validateProtein(protein);
-    int beginIndex = Math.max(0, mutationIndex - 1 - offset);
-    int endIndex = Math.min(protein.length(), mutationIndex - 1 + offset);
+    int beginIndex = Math.max(0, mutationIndex - 1 - enclosing);
+    int endIndex = Math.min(protein.length(), mutationIndex - 1 + enclosing);
     return protein.subSequence(beginIndex, endIndex);
   }
 

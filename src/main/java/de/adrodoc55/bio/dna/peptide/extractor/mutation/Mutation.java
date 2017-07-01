@@ -52,10 +52,10 @@ public interface Mutation {
    * number of characters before and after the mutation that are retrieved.
    *
    * @param protein
-   * @param offset the number of characters before and after the mutation that are retrieved
+   * @param enclosing the number of characters before and after the mutation that are extraced
    * @return the extracted {@link String} of AminoAcids
    */
-  CharSequence extractFromProtein(CharSequence protein, int offset) throws ValidationException;
+  CharSequence extractFromProtein(CharSequence protein, int enclosing) throws ValidationException;
 
   void validateProtein(CharSequence protein) throws ValidationException;
 

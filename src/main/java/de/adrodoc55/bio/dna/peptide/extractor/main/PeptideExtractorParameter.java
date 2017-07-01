@@ -61,9 +61,9 @@ public class PeptideExtractorParameter {
   @Parameter(names = {"-o", "--output"}, required = true, description = "Specify the output file")
   private File output;
 
-  @Parameter(names = {"-f", "--offset"},
+  @Parameter(names = {"-e", "--enclosing"},
       description = "The number of aminoacids before and after each mutation that are extracted")
-  private int offset = 8;
+  private int enclosing = 8;
 
   @Parameter(names = {"-i", "--ignore-errors"},
       description = "Continue execution when an error occurs")
@@ -84,8 +84,8 @@ public class PeptideExtractorParameter {
     return output;
   }
 
-  public int getOffset() {
-    return offset;
+  public int getEnclosing() {
+    return enclosing;
   }
 
   public boolean isIgnoreErrors() {

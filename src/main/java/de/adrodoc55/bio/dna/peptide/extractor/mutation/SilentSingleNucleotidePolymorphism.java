@@ -93,7 +93,7 @@ public class SilentSingleNucleotidePolymorphism implements Mutation {
   }
 
   @Override
-  public CharSequence extractFromProtein(CharSequence protein, int offset)
+  public CharSequence extractFromProtein(CharSequence protein, int enclosing)
       throws ValidationException {
     throw new UnsupportedOperationException();
   }
