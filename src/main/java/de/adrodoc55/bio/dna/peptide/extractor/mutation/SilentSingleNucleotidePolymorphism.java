@@ -53,7 +53,7 @@ import de.adrodoc55.bio.dna.peptide.extractor.ValidationException;
  */
 public class SilentSingleNucleotidePolymorphism implements Mutation {
   private static Pattern PATTERN =
-      Pattern.compile(">.*:c\\.(\\d+)([A-Za-z])>([A-Za-z])\\(p\\.=\\)$");
+      Pattern.compile("^>.*:c\\.(\\d+)([A-Za-z])>([A-Za-z])\\(p\\.=\\)$");
 
   public static SilentSingleNucleotidePolymorphism parse(CharSequence header)
       throws UnknownNucleotideException {

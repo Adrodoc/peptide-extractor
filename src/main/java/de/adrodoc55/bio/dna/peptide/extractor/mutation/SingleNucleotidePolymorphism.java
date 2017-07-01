@@ -54,7 +54,7 @@ import de.adrodoc55.bio.dna.peptide.extractor.ValidationException;
  * @author Adrodoc55
  */
 public class SingleNucleotidePolymorphism implements Mutation {
-  private static Pattern PATTERN = Pattern.compile(">.*:p\\.([A-Za-z]{3})(\\d+)([A-Za-z]{3})$");
+  private static Pattern PATTERN = Pattern.compile("^>.*:p\\.([A-Za-z]{3})(\\d+)([A-Za-z]{3})$");
 
   public static SingleNucleotidePolymorphism parse(CharSequence header)
       throws UnknownAminoAcidException {
