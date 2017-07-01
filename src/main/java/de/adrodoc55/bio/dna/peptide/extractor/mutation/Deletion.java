@@ -52,7 +52,7 @@ import de.adrodoc55.bio.dna.peptide.extractor.ValidationException;
  * @author Adrodoc55
  */
 public class Deletion implements Mutation {
-  private static Pattern PATTERN = Pattern.compile(">.*([A-Za-z]{3})(\\d+)[dD][eE][lL]$");
+  private static Pattern PATTERN = Pattern.compile(">.*:p\\.([A-Za-z]{3})(\\d+)[dD][eE][lL]$");
 
   public static Deletion parse(CharSequence header) throws UnknownAminoAcidException {
     Matcher matcher = PATTERN.matcher(header);

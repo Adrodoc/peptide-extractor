@@ -60,7 +60,7 @@ import de.adrodoc55.bio.dna.peptide.extractor.ValidationException;
  */
 public class Insertion implements Mutation {
   private static Pattern PATTERN =
-      Pattern.compile(">.*([A-Za-z]{3})(\\d+)_([A-Za-z]{3})(\\d+)ins((?:[A-Za-z]{3})+)$");
+      Pattern.compile(">.*:p\\.([A-Za-z]{3})(\\d+)_([A-Za-z]{3})(\\d+)ins((?:[A-Za-z]{3})+)$");
 
   public static Insertion parse(CharSequence header)
       throws ValidationException, UnknownAminoAcidException {

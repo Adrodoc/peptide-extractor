@@ -52,7 +52,7 @@ import de.adrodoc55.bio.dna.peptide.extractor.ValidationException;
  * @author Adrodoc55
  */
 public class Termination implements Mutation {
-  private static Pattern PATTERN = Pattern.compile(">.*([A-Za-z]{3})(\\d+)[tT][eE][rR]$");
+  private static Pattern PATTERN = Pattern.compile(">.*:p\\.([A-Za-z]{3})(\\d+)[tT][eE][rR]$");
 
   public static Termination parse(CharSequence header) throws UnknownAminoAcidException {
     Matcher matcher = PATTERN.matcher(header);
