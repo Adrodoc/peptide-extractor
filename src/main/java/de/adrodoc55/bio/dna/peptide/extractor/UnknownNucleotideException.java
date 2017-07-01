@@ -39,62 +39,27 @@
  * Sie sollten eine Kopie der GNU General Public License zusammen mit Peptide Extractor erhalten
  * haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
  */
-package de.adrodoc55.bio.dna.peptide.extractor.mutation;
-
-import static java.lang.Character.toUpperCase;
-
-import de.adrodoc55.bio.dna.AminoAcid;
-import de.adrodoc55.bio.dna.peptide.extractor.UnknownAminoAcidException;
-import de.adrodoc55.bio.dna.peptide.extractor.UnknownNucleotideException;
-import de.adrodoc55.bio.dna.peptide.extractor.ValidationException;
+package de.adrodoc55.bio.dna.peptide.extractor;
 
 /**
  * @author Adrodoc55
  */
-public class Mutations {
-  public static Mutation parse(String header)
-      throws UnknownAminoAcidException, ValidationException, UnknownNucleotideException {
-    Mutation ssnp = SilentSingleNucleotidePolymorphism.parse(header);
-    if (ssnp != null) {
-      return ssnp;
-    }
-    Mutation termination = Termination.parse(header);
-    if (termination != null) {
-      return termination;
-    }
-    Mutation deletion = Deletion.parse(header);
-    if (deletion != null) {
-      return deletion;
-    }
-    Mutation insertion = Insertion.parse(header);
-    if (insertion != null) {
-      return insertion;
-    }
-    Mutation snp = SingleNucleotidePolymorphism.parse(header);
-    if (snp != null) {
-      return snp;
-    }
-    return null;
+public class UnknownNucleotideException extends PeptideExtractorException {
+  private static final long serialVersionUID = 1L;
+
+  public UnknownNucleotideException() {
+    super();
   }
 
-  /**
-   *
-   * @param protein
-   * @param mutationIndex (1 based)
-   * @param expected
-   * @throws ValidationException
-   */
-  public static void checkAmino(CharSequence protein, int mutationIndex, AminoAcid expected)
-      throws ValidationException {
-    char actualAmino = toUpperCase(protein.charAt(mutationIndex - 1));
-    char expectedAmino = expected.getCharCode();
-    checkValid(actualAmino != expectedAmino, "Incorrect aminoacid at index " + mutationIndex
-        + "! Expected " + expectedAmino + " but got " + actualAmino);
+  public UnknownNucleotideException(String message) {
+    super(message);
   }
 
-  public static void checkValid(boolean b, String message) throws ValidationException {
-    if (b) {
-      throw new ValidationException(message);
-    }
+  public UnknownNucleotideException(Throwable cause) {
+    super(cause);
+  }
+
+  public UnknownNucleotideException(String message, Throwable cause) {
+    super(message, cause);
   }
 }

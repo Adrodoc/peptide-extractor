@@ -41,60 +41,68 @@
  */
 package de.adrodoc55.bio.dna.peptide.extractor.mutation;
 
-import static java.lang.Character.toUpperCase;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import de.adrodoc55.bio.dna.AminoAcid;
-import de.adrodoc55.bio.dna.peptide.extractor.UnknownAminoAcidException;
+import de.adrodoc55.bio.dna.Nucleotide;
 import de.adrodoc55.bio.dna.peptide.extractor.UnknownNucleotideException;
 import de.adrodoc55.bio.dna.peptide.extractor.ValidationException;
 
 /**
  * @author Adrodoc55
  */
-public class Mutations {
-  public static Mutation parse(String header)
-      throws UnknownAminoAcidException, ValidationException, UnknownNucleotideException {
-    Mutation ssnp = SilentSingleNucleotidePolymorphism.parse(header);
-    if (ssnp != null) {
-      return ssnp;
+public class SilentSingleNucleotidePolymorphism implements Mutation {
+  private static Pattern PATTERN =
+      Pattern.compile(">.*:c\\.(\\d+)([A-Za-z])>([A-Za-z])\\(p\\.=\\)$");
+
+  public static SilentSingleNucleotidePolymorphism parse(CharSequence header)
+      throws UnknownNucleotideException {
+    Matcher matcher = PATTERN.matcher(header);
+    if (matcher.find()) {
+      int mutationIndex = Integer.parseInt(matcher.group(1));
+      Nucleotide nativeNucleotide = Nucleotide.fromCharCode(matcher.group(2).charAt(0));
+      Nucleotide mutatedNucleotide = Nucleotide.fromCharCode(matcher.group(3).charAt(0));
+      return new SilentSingleNucleotidePolymorphism(mutationIndex, nativeNucleotide,
+          mutatedNucleotide);
+    } else {
+      return null;
     }
-    Mutation termination = Termination.parse(header);
-    if (termination != null) {
-      return termination;
-    }
-    Mutation deletion = Deletion.parse(header);
-    if (deletion != null) {
-      return deletion;
-    }
-    Mutation insertion = Insertion.parse(header);
-    if (insertion != null) {
-      return insertion;
-    }
-    Mutation snp = SingleNucleotidePolymorphism.parse(header);
-    if (snp != null) {
-      return snp;
-    }
-    return null;
   }
 
-  /**
-   *
-   * @param protein
-   * @param mutationIndex (1 based)
-   * @param expected
-   * @throws ValidationException
-   */
-  public static void checkAmino(CharSequence protein, int mutationIndex, AminoAcid expected)
+  private final int mutationIndex;
+  private final Nucleotide nativeNucleotide;
+  private final Nucleotide mutatedNucleotide;
+
+  public SilentSingleNucleotidePolymorphism(int mutationIndex, Nucleotide nativeNucleotide,
+      Nucleotide mutatedNucleotide) {
+    this.mutationIndex = mutationIndex;
+    this.nativeNucleotide = nativeNucleotide;
+    this.mutatedNucleotide = mutatedNucleotide;
+  }
+
+  public int getMutationIndex() {
+    return mutationIndex;
+  }
+
+  public Nucleotide getNaitveNucleotide() {
+    return nativeNucleotide;
+  }
+
+  public Nucleotide getMutatedNucleotide() {
+    return mutatedNucleotide;
+  }
+
+  @Override
+  public CharSequence extractFromProtein(CharSequence protein, int offset)
       throws ValidationException {
-    char actualAmino = toUpperCase(protein.charAt(mutationIndex - 1));
-    char expectedAmino = expected.getCharCode();
-    checkValid(actualAmino != expectedAmino, "Incorrect aminoacid at index " + mutationIndex
-        + "! Expected " + expectedAmino + " but got " + actualAmino);
+    throw new UnsupportedOperationException();
   }
 
-  public static void checkValid(boolean b, String message) throws ValidationException {
-    if (b) {
-      throw new ValidationException(message);
-    }
+  @Override
+  public void validateProtein(CharSequence protein) throws ValidationException {}
+
+  @Override
+  public String getUniqueSolution(CharSequence output) {
+    throw new UnsupportedOperationException();
   }
 }

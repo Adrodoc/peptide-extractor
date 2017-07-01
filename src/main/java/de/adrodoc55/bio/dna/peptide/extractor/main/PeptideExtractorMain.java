@@ -62,6 +62,7 @@ import com.google.common.io.Files;
 import de.adrodoc55.bio.dna.peptide.extractor.PeptideExtractorException;
 import de.adrodoc55.bio.dna.peptide.extractor.mutation.Mutation;
 import de.adrodoc55.bio.dna.peptide.extractor.mutation.Mutations;
+import de.adrodoc55.bio.dna.peptide.extractor.mutation.SilentSingleNucleotidePolymorphism;
 import de.adrodoc55.bio.dna.peptide.extractor.mutation.Termination;
 
 /**
@@ -129,7 +130,10 @@ public class PeptideExtractorMain {
     String mutationDescription = header + " in line " + headerLineNumber;
     try {
       Mutation mutation = Mutations.parse(header);
-      if (mutation instanceof Termination) {
+      if (mutation instanceof SilentSingleNucleotidePolymorphism) {
+        System.err.println("Ignoring silent mutation " + mutationDescription
+            + ", because silent mutations don't cause an aminoacid sequence alternation");
+      } else if (mutation instanceof Termination) {
         System.err.println("Ignoring terminating mutation " + mutationDescription
             + ", because terminating mutations don't cause an aminoacid sequence alternation");
       } else if (mutation != null) {
